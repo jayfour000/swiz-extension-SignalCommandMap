@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testrun name="" >
-<testsuite  name="Default Test Suite" project="swiz-extention-SignalCommandMap">
-<testsuite name="SignalCommandMapTest" type="testcaseclass">
-<testcase name="mapSignalToCommand_signalMapped_signalAddedWithNoError" classname="SignalCommandMapTest"/>
-</testsuite>
-</testsuite>
-<portNumber value="8765" />
-</testrun>
