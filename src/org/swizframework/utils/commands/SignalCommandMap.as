@@ -7,7 +7,7 @@ package org.swizframework.utils.commands
 	import org.swizframework.core.ISwiz;
 	import org.swizframework.core.ISwizAware;
 
-	public class SignalCommandMap implements ISwizAware
+	public class SignalCommandMap implements ISwizAware, ISignalCommandMap
 	{
 
 		//------------------------------------------------------
@@ -103,15 +103,32 @@ package org.swizframework.utils.commands
 			if (hasSignalCommand(signal, commandClass))
 				return;
 
-			signalMap[signal] = commandClass;
-
+			const signalCommandMap:Dictionary = signalMap[signal] ||= new Dictionary(false);
 			const callback:Function = function():void
 			{
 				routeSignalToCommand(signal, arguments, commandClass, oneShot);
 			};
 
+			signalCommandMap[commandClass] = callback;
+
 			signal.add(callback);
 		}
+
+		public function mapSignalClassToCommand(signalClass:Class, commandClass:Class, onShot:Boolean = false):void
+		{
+			// TODO
+		}
+
+		public function unapSignalFromCommand(signal:ISignal, commandClass:Class):void
+		{
+			// TODO
+		}
+
+		public function unmapSignalClassFromCommand(signalClass:Class, commandClass:Class):void
+		{
+			// TODO
+		}
+
 
 		/**
 		 * Method to unmap a signal and command
@@ -137,8 +154,7 @@ package org.swizframework.utils.commands
 		 */
 		public function hasSignalCommand(signal:ISignal, commandClass:Class):Boolean
 		{
-			// TODO: this does not work at all
-			var callbacksByCommandClass:Object = signalMap[signal];
+			var callbacksByCommandClass:Dictionary = signalMap[signal];
 
 			if (callbacksByCommandClass == null)
 				return false;
