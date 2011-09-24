@@ -2,6 +2,7 @@ package org.swizframework.utils.commands
 {
 	import flash.utils.Dictionary;
 	import flash.utils.describeType;
+	import flash.utils.getQualifiedClassName;
 
 	import org.osflash.signals.*;
 	import org.swizframework.core.Bean;
@@ -136,7 +137,8 @@ package org.swizframework.utils.commands
 
 		public function mapSignalClassToCommand(signalClass:Class, commandClass:Class, onShot:Boolean = false):void
 		{
-			// TODO
+			var signal:ISignal = getSignalClassInstance(signalClass);
+			mapSignalToCommand(signal, commandClass, onShot);
 		}
 
 		public function unapSignalFromCommand(signal:ISignal, commandClass:Class):void
@@ -239,19 +241,48 @@ package org.swizframework.utils.commands
 			commandClassExecuteParameters[commandClass] = x.factory.method.(@name == "execute")..parameter;
 		}
 
-		protected function buildPrototypeBean(commandClass:Class):void
+		protected function getSignalClassInstance(signalClass:Class):ISignal
 		{
-			// create Prototype bean for commandClass if it hasn't been created already
-			if (_swiz.beanFactory.getBeanByType(commandClass) == null)
+			var bean:Bean = _swiz.beanFactory.getBeanByType(signalClass);
+			return bean ? ISignal(bean.source) : buildSignalClassInstance(signalClass);
+		}
+
+		protected function buildSignalClassInstance(signalClass:Class):ISignal
+		{
+			buildBean(signalClass);
+			var signal:ISignal = instantiateSignal(signalClass);
+			return signal;
+		}
+
+		protected function buildPrototypeBean(beanClass:Class):void
+		{
+			// create Prototype bean for class if it hasn't been created already
+			if (_swiz.beanFactory.getBeanByType(beanClass) == null)
 			{
 				// create a Prototype for adding to the BeanFactory
-				var commandPrototype:Prototype = new Prototype(commandClass);
-				commandPrototype.typeDescriptor = TypeCache.getTypeDescriptor(commandClass, _swiz.domain);
+				var classPrototype:Prototype = new Prototype(beanClass);
+				classPrototype.typeDescriptor = TypeCache.getTypeDescriptor(beanClass, _swiz.domain);
 
 				// add command bean for later instantiation
-				_swiz.beanFactory.addBean(commandPrototype, false);
+				_swiz.beanFactory.addBean(classPrototype, false);
 			}
 		}
+
+		protected function buildBean(beanClass:Class):void
+		{
+			// create bean for class if it hasn't been created already
+			if (_swiz.beanFactory.getBeanByType(beanClass) == null)
+			{
+				// create a Prototype for adding to the BeanFactory
+				var bean:Bean = new Bean(new beanClass(), getQualifiedClassName(beanClass))
+				bean.typeDescriptor = TypeCache.getTypeDescriptor(beanClass, _swiz.domain);
+
+				// add bean
+				_swiz.beanFactory.addBean(bean);
+			}
+		}
+
+
 
 		protected function verifyValueObjects(commandClass:Class, signal:ISignal, valueObjects:Array):Boolean
 		{
@@ -270,6 +301,18 @@ package org.swizframework.utils.commands
 			return true;
 		}
 
+		protected function instantiateSignal(signalClass:Class):ISignal
+		{
+			var signal:ISignal;
+
+			// get our signal bean
+			var signalBean:Bean = _swiz.beanFactory.getBeanByType(signalClass);
+
+			if (signalBean == null)
+				throw new Error("Signal bean not found.");
+
+			return signalBean.source;
+		}
 
 		/**
 		 * Helper method that instantiates a command
@@ -285,7 +328,7 @@ package org.swizframework.utils.commands
 			var commandPrototype:Bean = _swiz.beanFactory.getBeanByType(commandClass);
 
 			if (commandPrototype == null)
-				throw new Error("Command bean not found for mapped event type.");
+				throw new Error("Command bean not found.");
 
 			if (commandPrototype is Prototype)
 			{
