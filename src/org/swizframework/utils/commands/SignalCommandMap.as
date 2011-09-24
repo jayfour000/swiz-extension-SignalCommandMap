@@ -4,8 +4,11 @@ package org.swizframework.utils.commands
 	import flash.utils.describeType;
 
 	import org.osflash.signals.*;
+	import org.swizframework.core.Bean;
 	import org.swizframework.core.ISwiz;
 	import org.swizframework.core.ISwizAware;
+	import org.swizframework.core.Prototype;
+	import org.swizframework.reflection.TypeCache;
 
 	public class SignalCommandMap implements ISwizAware, ISignalCommandMap
 	{
@@ -96,9 +99,13 @@ package org.swizframework.utils.commands
 		public function mapSignalToCommand(signal:ISignal, commandClass:Class, oneShot:Boolean = false):void
 		{
 			if (!signal || !commandClass)
+			{
+				throw new Error("mapSignalToCommand requires a signal and command class.");
 				return;
+			}
 
 			verifyCommandClass(commandClass);
+			buildPrototypeBean(commandClass);
 
 			if (hasSignalCommand(signal, commandClass))
 				return;
@@ -219,6 +226,22 @@ package org.swizframework.utils.commands
 			commandClassExecuteParameters[commandClass] = x.factory.method.(@name == "execute")..parameter;
 		}
 
+		protected function buildPrototypeBean(commandClass:Class):void
+		{
+			// create Prototype bean for commandClass if it hasn't been created already
+			if (_swiz.beanFactory.getBeanByType(commandClass) == null)
+			{
+				// create a Prototype for adding to the BeanFactory
+				var commandPrototype:Prototype = new Prototype(commandClass);
+				commandPrototype.typeDescriptor = TypeCache.getTypeDescriptor(commandClass, _swiz.domain);
+				// add command bean for later instantiation
+				_swiz.beanFactory.addBean(commandPrototype, false);
+			}
+
+
+
+		}
+
 		protected function verifyValueObjects(commandClass:Class, signal:ISignal, valueObjects:Array):Boolean
 		{
 			var parameters:XMLList = commandClassExecuteParameters[commandClass] as XMLList;
@@ -245,8 +268,25 @@ package org.swizframework.utils.commands
 		 */
 		protected function instantiateCommand(commandClass:Class):Object
 		{
-			var command:Object = new commandClass();
-			return command;
+			var command:Object;
+
+			// get our command bean
+			var commandPrototype:Bean = _swiz.beanFactory.getBeanByType(commandClass);
+
+			if (commandPrototype == null)
+				throw new Error("Command bean not found for mapped event type.");
+
+			if (commandPrototype is Prototype)
+			{
+				// get a new instance of the command class
+				command = Prototype(commandPrototype).source;
+			}
+			else
+			{
+				throw new Error("Commands must be provided as Prototype beans.");
+			}
+
+			return command
 		}
 
 
