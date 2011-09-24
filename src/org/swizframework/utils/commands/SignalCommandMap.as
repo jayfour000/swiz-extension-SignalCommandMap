@@ -10,6 +10,19 @@ package org.swizframework.utils.commands
 	import org.swizframework.core.Prototype;
 	import org.swizframework.reflection.TypeCache;
 
+	/**
+	 * This class is based on:
+	 * RobotLegs: SignalCommandMap.as written by Joel Hooks
+	 * @see https://github.com/swiz/swiz-framework/blob/develop/src/org/swizframework/utils/commands/CommandMap.as
+	 *
+	 * and
+	 *
+	 * Swiz: CommandMap.as written by Ben Clinkenbeard
+	 * @see https://github.com/swiz/swiz-framework/blob/develop/src/org/swizframework/utils/commands/CommandMap.as
+	 *
+	 * @author Jason Hanson
+	 *
+	 */
 	public class SignalCommandMap implements ISwizAware, ISignalCommandMap
 	{
 
@@ -234,12 +247,10 @@ package org.swizframework.utils.commands
 				// create a Prototype for adding to the BeanFactory
 				var commandPrototype:Prototype = new Prototype(commandClass);
 				commandPrototype.typeDescriptor = TypeCache.getTypeDescriptor(commandClass, _swiz.domain);
+
 				// add command bean for later instantiation
 				_swiz.beanFactory.addBean(commandPrototype, false);
 			}
-
-
-
 		}
 
 		protected function verifyValueObjects(commandClass:Class, signal:ISignal, valueObjects:Array):Boolean
