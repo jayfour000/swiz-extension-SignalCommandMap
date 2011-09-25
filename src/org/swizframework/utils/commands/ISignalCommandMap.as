@@ -1,9 +1,14 @@
 package org.swizframework.utils.commands
 {
 	import org.osflash.signals.ISignal;
+	import org.swizframework.core.ISwiz;
 
 	public interface ISignalCommandMap
 	{
+
+		function get swiz():ISwiz;
+
+		function set swiz(value:ISwiz):void;
 
 		function mapSignalToCommand(signal:ISignal, commandClass:Class, oneShot:Boolean = false):void;
 

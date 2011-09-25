@@ -13,8 +13,8 @@ package org.swizframework.utils.commands
 
 	/**
 	 * This class is based on:
-	 * RobotLegs: SignalCommandMap.as written by Joel Hooks
-	 * @see https://github.com/swiz/swiz-framework/blob/develop/src/org/swizframework/utils/commands/CommandMap.as
+	 * RobotLegs: SignalCommandMap.as written by Joel Hooks (and Robert Penner and others (see the History on the class for complete list))
+	 * @see https://github.com/joelhooks/signals-extensions-CommandSignal/blob/master/src/org/robotlegs/base/SignalCommandMap.as
 	 *
 	 * and
 	 *
@@ -43,6 +43,11 @@ package org.swizframework.utils.commands
 		 */
 		protected var _swiz:ISwiz;
 
+		public function get swiz():ISwiz
+		{
+			return _swiz;
+		}
+
 		/**
 		 * Setter to satisfy ISwizAware interface contract.
 		 *
@@ -62,6 +67,8 @@ package org.swizframework.utils.commands
 				_swiz = swiz;
 			}
 		}
+
+
 
 
 		//------------------------------------------------------
@@ -143,12 +150,22 @@ package org.swizframework.utils.commands
 
 		public function unapSignalFromCommand(signal:ISignal, commandClass:Class):void
 		{
-			// TODO
+			var callbacksByCommandClass:Dictionary = signalMap[signal];
+			if (callbacksByCommandClass == null)
+				return;
+
+			var callback:Function = callbacksByCommandClass[commandClass];
+
+			if (callback == null)
+				return;
+
+			signal.remove(callback);
+			delete callbacksByCommandClass[commandClass];
 		}
 
 		public function unmapSignalClassFromCommand(signalClass:Class, commandClass:Class):void
 		{
-			// TODO
+			throw new Error("this feature is not written yet");
 		}
 
 
@@ -262,7 +279,6 @@ package org.swizframework.utils.commands
 				// create a Prototype for adding to the BeanFactory
 				var classPrototype:Prototype = new Prototype(beanClass);
 				classPrototype.typeDescriptor = TypeCache.getTypeDescriptor(beanClass, _swiz.domain);
-
 				// add command bean for later instantiation
 				_swiz.beanFactory.addBean(classPrototype, false);
 			}
@@ -273,8 +289,8 @@ package org.swizframework.utils.commands
 			// create bean for class if it hasn't been created already
 			if (_swiz.beanFactory.getBeanByType(beanClass) == null)
 			{
-				// create a Prototype for adding to the BeanFactory
-				var bean:Bean = new Bean(new beanClass(), getQualifiedClassName(beanClass))
+				// create a Bean for adding to the BeanFactory
+				var bean:Bean = new Bean(new beanClass(), getQualifiedClassName(beanClass)); // TODO: Ask Ben Clinkenbeard what the impact of not using a sting name here has.
 				bean.typeDescriptor = TypeCache.getTypeDescriptor(beanClass, _swiz.domain);
 
 				// add bean

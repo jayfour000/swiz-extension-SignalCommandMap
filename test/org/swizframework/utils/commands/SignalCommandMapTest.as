@@ -1,23 +1,37 @@
 package org.swizframework.utils.commands
 {
-	import flexunit.framework.Assert;
+
+	import flash.system.ApplicationDomain;
 
 	import org.hamcrest.assertThat;
 	import org.hamcrest.core.isA;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.isFalse;
 	import org.hamcrest.object.isTrue;
+	import org.swizframework.core.BeanFactory;
+	import org.swizframework.core.Swiz;
 	import org.swizframework.utils.commands.SignalCommandMap;
+	import org.swizframework.utils.commands.helpers.*;
 
 	public class SignalCommandMapTest
 	{
+		private var t:TestCommandExecuteOneParams;
+
 
 		private var signalCommandMap:ISignalCommandMap;
+
+		private var swiz:Swiz;
 
 		[Before]
 		public function setUp():void
 		{
+			swiz = new Swiz();
+			swiz.beanFactory = new BeanFactory();
+			swiz.domain = ApplicationDomain.currentDomain;
+			swiz.init();
+
 			signalCommandMap = new SignalCommandMap();
+			signalCommandMap.swiz = swiz;
 		}
 
 		[After]
@@ -52,19 +66,17 @@ package org.swizframework.utils.commands
 		// mapSignalToCommand -- nulls
 		//------------------------------------------------------
 
-		[Test]
+		[Test(expects = "Error")]
 		public function mapSignalToCommand_nullSignal_signalNotMapped():void
 		{
 			signalCommandMap.mapSignalToCommand(null, TestCommandExecuteZeroParams);
-			assertThat(signalCommandMap.hasSignalCommand(null, TestCommandExecuteZeroParams), isFalse());
 		}
 
-		[Test]
+		[Test(expects = "Error")]
 		public function mapSignalToCommand_nullCommand_signalNotMapped():void
 		{
 			var signal:TestSignal = new TestSignal();
 			signalCommandMap.mapSignalToCommand(signal, null);
-			assertThat(signalCommandMap.hasSignalCommand(signal, null), isFalse());
 		}
 
 		[Test(expects = "Error")]
@@ -264,6 +276,23 @@ package org.swizframework.utils.commands
 		}
 
 		//------------------------------------------------------
+		// unmapSignalFromCommand
+		//------------------------------------------------------
+
+		[Test]
+		public function unmapSignalFromCommand_signalThatWasPreviouslyMappedUnmapped_unmappedSuccess():void
+		{
+			var signal:TestSignal = new TestSignal();
+			signalCommandMap.mapSignalToCommand(signal, TestCommandExecuteZeroParams);
+			signalCommandMap.unapSignalFromCommand(signal, TestCommandExecuteZeroParams);
+			var b:Boolean = signalCommandMap.hasSignalCommand(signal, TestCommandExecuteZeroParams);
+			assertThat(b, isFalse());
+
+		}
+
+
+
+		//------------------------------------------------------
 		//
 		// Helper methods
 		//
@@ -281,105 +310,7 @@ package org.swizframework.utils.commands
 	}
 }
 
-//------------------------------------------------------
-//
-// Helper internal classes
-//
-//------------------------------------------------------
 
 
-import org.osflash.signals.Signal;
 
-class TestSignal extends Signal
-{
-	public function TestSignal()
-	{
-		super();
-	}
-}
-
-class TestSignalOneParam extends Signal
-{
-	public function TestSignalOneParam()
-	{
-		super(Date);
-	}
-}
-
-class TestSignalTwoParams extends Signal
-{
-	public function TestSignalTwoParams()
-	{
-		super(Date, Array);
-	}
-}
-
-class TestCommandNoExecute
-{
-	public function TestCommandNoExecute()
-	{
-
-	}
-
-}
-
-class TestCommandExecuteZeroParams
-{
-	public static var executeCount:int = 0;
-
-	public static var constructorCallCount:int = 0;
-
-	public function TestCommandExecuteZeroParams()
-	{
-		constructorCallCount++;
-	}
-
-	public function execute():void
-	{
-		executeCount++;
-	}
-}
-
-class TestCommandExecuteOneParams
-{
-	public static var executeCount:int = 0;
-
-	public static var constructorCallCount:int = 0;
-
-	public static var param1:Object;
-
-	public function TestCommandExecuteOneParams()
-	{
-		constructorCallCount++;
-	}
-
-	public function execute(date:Date):void
-	{
-		executeCount++;
-		param1 = date;
-	}
-}
-
-class TestCommandExecuteTwoParams
-{
-	public static var executeCount:int = 0;
-
-	public static var constructorCallCount:int = 0;
-
-	public static var param1:Object;
-
-	public static var param2:Object;
-
-	public function TestCommandExecuteTwoParams()
-	{
-		constructorCallCount++;
-	}
-
-	public function execute(date:Date, array:Array):void
-	{
-		executeCount++;
-		param1 = date;
-		param2 = array;
-	}
-}
 
