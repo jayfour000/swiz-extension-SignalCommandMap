@@ -8,6 +8,7 @@ package org.swizframework.utils.commands
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.isFalse;
 	import org.hamcrest.object.isTrue;
+	import org.osflash.signals.ISignal;
 	import org.swizframework.core.BeanFactory;
 	import org.swizframework.core.Swiz;
 	import org.swizframework.utils.commands.SignalCommandMap;
@@ -276,6 +277,41 @@ package org.swizframework.utils.commands
 		}
 
 		//------------------------------------------------------
+		// mapSignalClassToCommand -- nulls
+		//------------------------------------------------------
+
+		[Test(expects = "Error")]
+		public function mapSignalClassToCommand_nullSignal_signalNotMapped():void
+		{
+			signalCommandMap.mapSignalClassToCommand(null, TestCommandExecuteZeroParams);
+		}
+
+		[Test(expects = "Error")]
+		public function mapSignalClassToCommand_nullCommand_signalNotMapped():void
+		{
+			signalCommandMap.mapSignalClassToCommand(TestSignal, null);
+		}
+
+		[Test(expects = "Error")]
+		public function mapSignalClassToCommand_commandMissingExecuteMethod_throwsError():void
+		{
+			signalCommandMap.mapSignalClassToCommand(TestSignal, TestCommandNoExecute);
+		}
+
+		[Test(expects = "Error")]
+		public function mapSignalClassToCommand_signalInstanceAdded_throwsError():void
+		{
+			var signal:TestSignal = new TestSignal();
+			signalCommandMap.mapSignalClassToCommand(signal as Class, TestCommandNoExecute);
+		}
+
+		[Test(expects = "Error")]
+		public function mapSignalClassToCommand_classWrongType_throwsError():void
+		{
+			signalCommandMap.mapSignalClassToCommand(Date, TestCommandNoExecute);
+		}
+
+		//------------------------------------------------------
 		// unmapSignalFromCommand
 		//------------------------------------------------------
 
@@ -287,7 +323,19 @@ package org.swizframework.utils.commands
 			signalCommandMap.unapSignalFromCommand(signal, TestCommandExecuteZeroParams);
 			var b:Boolean = signalCommandMap.hasSignalCommand(signal, TestCommandExecuteZeroParams);
 			assertThat(b, isFalse());
+		}
 
+		//------------------------------------------------------
+		// unmapSignalClassFromCommand
+		//------------------------------------------------------
+
+		[Test]
+		public function unmapSignalClassFromCommand_signalThatWasPreviouslyMappedUnmapped_unmappedSuccess():void
+		{
+			var signal:ISignal = signalCommandMap.mapSignalClassToCommand(TestSignal, TestCommandExecuteZeroParams);
+			signalCommandMap.unmapSignalClassFromCommand(TestSignal, TestCommandExecuteZeroParams);
+			var b:Boolean = signalCommandMap.hasSignalCommand(signal, TestCommandExecuteZeroParams);
+			assertThat(b, isFalse());
 		}
 
 

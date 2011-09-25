@@ -12,7 +12,7 @@ package org.swizframework.utils.commands
 
 		function mapSignalToCommand(signal:ISignal, commandClass:Class, oneShot:Boolean = false):void;
 
-		function mapSignalClassToCommand(signalClass:Class, commandClass:Class, onShot:Boolean = false):void;
+		function mapSignalClassToCommand(signalClass:Class, commandClass:Class, onShot:Boolean = false):ISignal;
 
 		function unapSignalFromCommand(signal:ISignal, commandClass:Class):void;
 

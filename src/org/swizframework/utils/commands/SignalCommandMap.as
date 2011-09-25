@@ -68,9 +68,6 @@ package org.swizframework.utils.commands
 			}
 		}
 
-
-
-
 		//------------------------------------------------------
 		// signalMap
 		//------------------------------------------------------
@@ -111,7 +108,7 @@ package org.swizframework.utils.commands
 		//------------------------------------------------------
 
 		/**
-		 * Method to map a concrete signal class instance to a command type
+		 * Method to map a concrete signal instance to a command class
 		 *
 		 * @param signal			A signal instance
 		 * @param commandClass		A command class type
@@ -142,12 +139,26 @@ package org.swizframework.utils.commands
 			signal.add(callback);
 		}
 
-		public function mapSignalClassToCommand(signalClass:Class, commandClass:Class, onShot:Boolean = false):void
+		/**
+		 * Method to map a singal class (of type ISignal) to a command class
+		 *
+		 * @param signalClass		A signal class that implments ISignal
+		 * @param commandClass		A command class type
+		 * @param oneShot			If true the command will unmap from the signal after the first time the signal is dispatched
+		 */
+		public function mapSignalClassToCommand(signalClass:Class, commandClass:Class, onShot:Boolean = false):ISignal
 		{
 			var signal:ISignal = getSignalClassInstance(signalClass);
 			mapSignalToCommand(signal, commandClass, onShot);
+			return signal;
 		}
 
+		/**
+		 * Method to unmap a signal instance from a command class
+		 *
+		 * @param signal			A signal instance
+		 * @param commandClass		A command class type
+		 */
 		public function unapSignalFromCommand(signal:ISignal, commandClass:Class):void
 		{
 			var callbacksByCommandClass:Dictionary = signalMap[signal];
@@ -163,9 +174,15 @@ package org.swizframework.utils.commands
 			delete callbacksByCommandClass[commandClass];
 		}
 
+		/**
+		 * Method to unmap a signal class from a command class
+		 *
+		 * @param signal			A signal instance
+		 * @param commandClass		A command class type
+		 */
 		public function unmapSignalClassFromCommand(signalClass:Class, commandClass:Class):void
 		{
-			throw new Error("this feature is not written yet");
+			unapSignalFromCommand(getSignalClassInstance(signalClass), commandClass);
 		}
 
 
@@ -204,18 +221,23 @@ package org.swizframework.utils.commands
 		}
 
 
+
 		//------------------------------------------------------
 		//
 		// Protected methods
 		//
 		//------------------------------------------------------
 
+		protected function getSignalClassInstance(signalClass:Class):ISignal
+		{
+			var bean:Bean = _swiz.beanFactory.getBeanByType(signalClass);
+			return bean ? ISignal(bean.source) : buildSignalClassInstance(signalClass);
+		}
 
 		protected function mapCommands():void
 		{
 			// do nothing, subclasses must override
 		}
-
 
 		protected function unmapCommands():void
 		{
@@ -258,12 +280,6 @@ package org.swizframework.utils.commands
 			commandClassExecuteParameters[commandClass] = x.factory.method.(@name == "execute")..parameter;
 		}
 
-		protected function getSignalClassInstance(signalClass:Class):ISignal
-		{
-			var bean:Bean = _swiz.beanFactory.getBeanByType(signalClass);
-			return bean ? ISignal(bean.source) : buildSignalClassInstance(signalClass);
-		}
-
 		protected function buildSignalClassInstance(signalClass:Class):ISignal
 		{
 			buildBean(signalClass);
@@ -279,6 +295,7 @@ package org.swizframework.utils.commands
 				// create a Prototype for adding to the BeanFactory
 				var classPrototype:Prototype = new Prototype(beanClass);
 				classPrototype.typeDescriptor = TypeCache.getTypeDescriptor(beanClass, _swiz.domain);
+
 				// add command bean for later instantiation
 				_swiz.beanFactory.addBean(classPrototype, false);
 			}
@@ -297,8 +314,6 @@ package org.swizframework.utils.commands
 				_swiz.beanFactory.addBean(bean);
 			}
 		}
-
-
 
 		protected function verifyValueObjects(commandClass:Class, signal:ISignal, valueObjects:Array):Boolean
 		{
