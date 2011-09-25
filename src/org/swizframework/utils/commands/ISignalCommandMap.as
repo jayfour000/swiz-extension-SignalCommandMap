@@ -14,7 +14,7 @@ package org.swizframework.utils.commands
 
 		function mapSignalClassToCommand(signalClass:Class, commandClass:Class, onShot:Boolean = false):ISignal;
 
-		function unapSignalFromCommand(signal:ISignal, commandClass:Class):void;
+		function unmapSignalFromCommand(signal:ISignal, commandClass:Class):void;
 
 		function unmapSignalClassFromCommand(signalClass:Class, commandClass:Class):void;
 

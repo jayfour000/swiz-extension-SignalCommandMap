@@ -11,7 +11,6 @@ package org.swizframework.utils.commands
 	import org.osflash.signals.ISignal;
 	import org.swizframework.core.BeanFactory;
 	import org.swizframework.core.Swiz;
-	import org.swizframework.utils.commands.SignalCommandMap;
 	import org.swizframework.utils.commands.helpers.*;
 
 	public class SignalCommandMapTest
@@ -320,7 +319,7 @@ package org.swizframework.utils.commands
 		{
 			var signal:TestSignal = new TestSignal();
 			signalCommandMap.mapSignalToCommand(signal, TestCommandExecuteZeroParams);
-			signalCommandMap.unapSignalFromCommand(signal, TestCommandExecuteZeroParams);
+			signalCommandMap.unmapSignalFromCommand(signal, TestCommandExecuteZeroParams);
 			var b:Boolean = signalCommandMap.hasSignalCommand(signal, TestCommandExecuteZeroParams);
 			assertThat(b, isFalse());
 		}

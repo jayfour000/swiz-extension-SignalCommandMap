@@ -159,7 +159,7 @@ package org.swizframework.utils.commands
 		 * @param signal			A signal instance
 		 * @param commandClass		A command class type
 		 */
-		public function unapSignalFromCommand(signal:ISignal, commandClass:Class):void
+		public function unmapSignalFromCommand(signal:ISignal, commandClass:Class):void
 		{
 			var callbacksByCommandClass:Dictionary = signalMap[signal];
 			if (callbacksByCommandClass == null)
@@ -182,7 +182,7 @@ package org.swizframework.utils.commands
 		 */
 		public function unmapSignalClassFromCommand(signalClass:Class, commandClass:Class):void
 		{
-			unapSignalFromCommand(getSignalClassInstance(signalClass), commandClass);
+			unmapSignalFromCommand(getSignalClassInstance(signalClass), commandClass);
 		}
 
 
